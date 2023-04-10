@@ -3,10 +3,10 @@
 set -e
 
 # Allow the container to be started with `--user`
-if [[ "$1" = 'zkServer.sh' && "$(id -u)" = '0' ]]; then
-    chown -R zookeeper "$ZOO_DATA_DIR" "$ZOO_DATA_LOG_DIR" "$ZOO_LOG_DIR"
-    exec gosu zookeeper "$0" "$@"
-fi
+#if [[ "$1" = 'zkServer.sh' && "$(id -u)" = '0' ]]; then
+#    chown -R zookeeper "$ZOO_DATA_DIR" "$ZOO_DATA_LOG_DIR" "$ZOO_LOG_DIR"
+#    exec gosu zookeeper "$0" "$@"
+#fi
 
 # Generate the config only if it doesn't exist
 if [[ ! -f "$ZOO_CONF_DIR/zoo.cfg" ]]; then
@@ -31,6 +31,10 @@ if [[ ! -f "$ZOO_CONF_DIR/zoo.cfg" ]]; then
 
     for server in $ZOO_SERVERS; do
         echo "$server" >> "$CONFIG"
+        if [[ $(echo $server | grep $(hostname)) != "" ]]
+        then
+          echo $(echo "$server" | awk -F = '{print $1}' | awk -F . '{print $2}') > "$ZOO_DATA_DIR/myid"
+        fi
     done
 
     if [[ -n $ZOO_4LW_COMMANDS_WHITELIST ]]; then
